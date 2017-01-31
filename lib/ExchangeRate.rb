@@ -34,20 +34,54 @@ module ExchangeRate
 			ratesByDate[date] = rates
 		end
 		# save ratesByDate to rates.json
-		File.open("rates.json","w") do |f|
+		File.open("ExchangeRate/rates.json","w") do |f|
 	  	f.write(ratesByDate.to_json)
 		end
 		"Updated Successfuly"
 	end
 
+	# Get currencies included
+	def self.currencies()
+		File.open("ExchangeRate/rates.json","r") do |f|
+			rates = JSON.parse(f.read())
+			return rates[rates.keys[0]].keys
+		end
+	end
+
+	# Get last date updated
+	def self.lastupdated()
+		File.open("ExchangeRate/rates.json","r") do |f|
+			rates = JSON.parse(f.read())
+			return rates.keys[0]
+		end
+	end
+
 	# Call to get exchange rate
 	def self.at(date, base, counter)
+		# can send string or Date value
 		date = date.to_s
 		# load rates
-		File.open("rates.json","r") do |f|
+		File.open("ExchangeRate/rates.json","r") do |f|
 			rates = JSON.parse(f.read())
+			# find values
+			if rates.key?(date) then
+				ratesOnDay = rates[date]
+				puts ratesOnDay
+				if ratesOnDay.key?(base) then
+					baseV = ratesOnDay[base]
+				else
+					return "Error: No values found for "+base
+				end
+				if ratesOnDay.key?(counter) then
+					counterV = ratesOnDay[counter]
+				else
+					return "Error: No values found for "+counter
+				end
+			else
+				return "Error: No values found for "+date
+			end
 			# return base*counter for date
-			rates[date][base]*rates[date][counter]
+			return baseV/counterV
 		end
 	end
 end
